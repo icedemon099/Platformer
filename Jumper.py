@@ -12,14 +12,18 @@ class Jumper():
     def collisionCheck(self):
         pass
     def update(self):
-        self.moved = False
         self.yVel -= 9.8*(1/self.fps) #Gravity
         if not self.moved and self.xVel:
+            oldXVel = self.xVel
             self.xVel += math.copysign(6 * (1/self.fps),-1*self.xVel)
-        self.x += self.xVel
-        self.y += self.yVel
+            if (oldXVel>0) ^ (self.xVel>0): # ^ is the xor function. This will return true if ONE of those statements is true, but not both
+                self.xVel = 0
+        self.x += self.xVel * (1/self.fps)
+        self.y += self.yVel * (1/self.fps)
         if self.y < self.minY:
             self.y = self.minY
+            self.yVel = 0
+        self.moved = False
     def move(self, xAcc, yAcc):
         self.moved = True
         self.xVel += xAcc
