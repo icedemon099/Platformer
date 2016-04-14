@@ -1,6 +1,10 @@
 import math
+
 class Jumper():
+    _registry = []
+
     def __init__(self, fps):
+        self._registry.append(self)
         self.x = 0
         self.y = 0
         self.yVel = 0
@@ -9,8 +13,10 @@ class Jumper():
         self.maxRunSpeed = 20
         self.minY = 0
         self.moved = False
+
     def collisionCheck(self):
         pass
+
     def update(self):
         self.yVel -= 9.8*(1/self.fps) #Gravity
         if not self.moved and self.xVel:
@@ -24,6 +30,7 @@ class Jumper():
             self.y = self.minY
             self.yVel = 0
         self.moved = False
+
     def move(self, xAcc, yAcc):
         self.moved = True
         self.xVel += xAcc

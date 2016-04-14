@@ -1,14 +1,24 @@
-from math import *
+
+# Import libraries
 import pygame.locals
 import time
+from math import *
+
+# Import code
 import Jumper
+
+# Setup game
 pygame.init()
 pygame.display.set_mode((200,200))
+
 fps = 30
 a = 1
 b = 2
+
 Jumper = Jumper.Jumper(fps)
 lastPrint = time.time()
+
+# Main loop
 while True:
     lastTime = time.time()
     pressed = pygame.key.get_pressed()
