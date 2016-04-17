@@ -3,6 +3,7 @@
 import pygame.locals
 import time
 from math import *
+from sys import exit
 
 # Import code
 import Jumper
@@ -13,32 +14,36 @@ pygame.display.set_mode((200,200))
 
 fps = 30
 
-Jumper = Jumper.Jumper(fps)
-lastPrint = time.time()
+player = Jumper.Jumper(fps)
+lastprint = time.time()
 
 # Main loop
 while True:
-    lastTime = time.time()
+    timeprev = time.time()
+
+    # Movement input
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT]:
-        Jumper.move((-8)/fps,0)
+        player.move(-8, 0)
     if pressed[pygame.K_RIGHT]:
-        Jumper.move((8)/fps,0)
+        player.move(8, 0)
     if pressed[pygame.K_UP]:
-        Jumper.move(0,(12)/fps)
+        player.move(0, -12)
     if pressed[pygame.K_DOWN]:
-        Jumper.move(0,(-3)/fps)
+        player.move(0, 3)
+
     for event in pygame.event.get():
         if event.type == pygame.locals.QUIT:
-            import sys
             pygame.quit()
-            sys.exit()
-    Jumper.update()
-    if time.time() > lastPrint + 1:
-        print(Jumper.x, Jumper.y, Jumper.yVel)
-        lastPrint = time.time()
-    lostTime = time.time()-lastTime
-    if lostTime < (1/fps):
-        time.sleep((1/fps)-lostTime)
+            exit()
+
+    player.update()
+
+    timedelta = time.time()-timeprev
+    if time.time() > lastprint + 1:
+        print(player.x, player.y, player.xspeed, player.yspeed)
+        lastprint = time.time()
+    if timedelta < player.delta:
+        time.sleep(player.delta-timedelta)
     else:
         print("Overloaded")
