@@ -39,6 +39,7 @@ while True:
 
     player.update()
 
+    # Delta timing
     timedelta = time.time()-timeprev
     if time.time() > lastprint + 1:
         print(player.x, player.y, player.xspeed, player.yspeed)
