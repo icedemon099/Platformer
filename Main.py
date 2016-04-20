@@ -10,11 +10,11 @@ import Jumper
 
 # Setup game
 pygame.init()
-pygame.display.set_mode((200,200))
+screen = pygame.display.set_mode((200,200))
 
 fps = 30
 
-player = Jumper.Jumper(fps)
+player = Jumper.Jumper(fps, 50, 50)
 lastprint = time.time()
 
 # Main loop
@@ -38,7 +38,9 @@ while True:
             exit()
 
     player.update()
-
+    screen.fill((255,255,255))
+    player.render(screen)
+    pygame.display.flip()
     # Delta timing
     timedelta = time.time()-timeprev
     if time.time() > lastprint + 1:

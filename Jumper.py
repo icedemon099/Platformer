@@ -1,10 +1,11 @@
 import math
+import pygame
 
 class Jumper():
     _registry = []
     _fps = None
 
-    def __init__(self, fps):
+    def __init__(self, fps, width, length):
         self._registry.append(self)
         self._fps = fps
         self.delta = 1/fps
@@ -13,8 +14,10 @@ class Jumper():
         self.xspeed = 0
         self.yspeed = 0
         self.maxspeed = 20
-        self.maxy = 0
+        self.miny = 0
         self.moved = False
+        self.width = width
+        self.length = length
 
     def collisionCheck(self):
         pass
@@ -30,8 +33,8 @@ class Jumper():
         self.x += self.xspeed * self.delta
         self.y += self.yspeed * self.delta
         # Temporary floor collision. In future, move floor collision into checkCollision()
-        if self.y >= self.maxy:
-            self.y = self.maxy
+        if self.y <= self.miny:
+            self.y = self.miny
             self.yspeed = 0
         self.moved = False
 
@@ -45,4 +48,4 @@ class Jumper():
             self.yspeed = self.maxspeed
 
     def render(self, screen): #Call this in the Main update loop. It should draw the object to the screen
-        pass
+        pygame.draw.circle(screen, (0, 0, 0), (round(self.x), 200-round(self.y)), self.width)
