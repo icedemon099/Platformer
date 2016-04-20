@@ -4,10 +4,13 @@ import pygame
 class Jumper():
     _registry = []
     _fps = None
-
+    _sw = None
+    _sh = None
     def __init__(self, fps, width, length):
         self._registry.append(self)
         self._fps = fps
+        self._sw = pygame.display.Info().current_w
+        self._sh = pygame.display.Info().current_h
         self.delta = 1/fps
         self.x = 0
         self.y = 0
@@ -48,4 +51,4 @@ class Jumper():
             self.yspeed = self.maxspeed
 
     def render(self, screen): #Call this in the Main update loop. It should draw the object to the screen
-        pygame.draw.circle(screen, (0, 0, 0), (round(self.x), 200-round(self.y)), self.width)
+        pygame.draw.circle(screen, (0, 0, 0), (round(self.x), self._sh-round(self.y)), self.width)

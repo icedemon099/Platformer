@@ -10,7 +10,10 @@ import Jumper
 
 # Setup game
 pygame.init()
-screen = pygame.display.set_mode((200,200))
+info = pygame.display.Info()
+sw = info.current_w
+sh = info.current_h
+screen = pygame.display.set_mode((sw,sh))
 
 fps = 30
 
