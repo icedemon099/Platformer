@@ -28,9 +28,10 @@ while True:
     if pressed[pygame.K_RIGHT]:
         player.move(8, 0)
     if pressed[pygame.K_UP]:
-        player.move(0, -12)
+        #Positive direction is UP. Do not change
+        player.move(0, 12)
     if pressed[pygame.K_DOWN]:
-        player.move(0, 3)
+        player.move(0, -3)
 
     for event in pygame.event.get():
         if event.type == pygame.locals.QUIT:
