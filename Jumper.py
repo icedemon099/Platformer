@@ -21,6 +21,7 @@ class Jumper():
         self.moved = False
         self.width = width
         self.length = length
+        self.pixelFactor = 5 #Pixels per in-game meter
 
     def collisionCheck(self):
         pass
@@ -51,4 +52,4 @@ class Jumper():
             self.yspeed = self.maxspeed
 
     def render(self, screen): #Call this in the Main update loop. It should draw the object to the screen
-        pygame.draw.circle(screen, (0, 0, 0), (round(self.x), self._sh-round(self.y)), self.width)
+        pygame.draw.circle(screen, (0, 0, 0), (round(self.x*self.pixelFactor), self._sh-round(self.y*self.pixelFactor)), self.width)

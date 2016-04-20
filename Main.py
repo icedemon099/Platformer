@@ -14,10 +14,9 @@ info = pygame.display.Info()
 sw = info.current_w
 sh = info.current_h
 screen = pygame.display.set_mode((sw,sh))
-
 fps = 30
-
-player = Jumper.Jumper(fps, 50, 50)
+pixelFactor = 5
+player = Jumper.Jumper(fps, pixelFactor, 2.5)
 lastprint = time.time()
 
 # Main loop
