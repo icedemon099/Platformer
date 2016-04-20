@@ -29,7 +29,7 @@ class Jumper():
         # position movement
         self.x += self.xspeed * self.delta
         self.y += self.yspeed * self.delta
-        # floor collision
+        # Temporary floor collision. In future, move floor collision into checkCollision()
         if self.y >= self.maxy:
             self.y = self.maxy
             self.yspeed = 0
@@ -43,3 +43,6 @@ class Jumper():
             self.xspeed = math.copysign(self.maxspeed, self.xspeed)
         if self.yspeed > self.maxspeed:
             self.yspeed = self.maxspeed
+
+    def render(self, screen): #Call this in the Main update loop. It should draw the object to the screen
+        pass
