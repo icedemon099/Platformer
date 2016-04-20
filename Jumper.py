@@ -23,7 +23,7 @@ class Jumper():
         pass
 
     def update(self):
-        self.yspeed += 9.8*self.delta
+        self.yspeed += -9.8*self.delta
         if not self.moved and self.xspeed:
             xspeedprev = self.xspeed
             self.xspeed += math.copysign(6*self.delta, -1*self.xspeed)
