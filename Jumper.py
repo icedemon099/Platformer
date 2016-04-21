@@ -11,7 +11,7 @@ class Jumper():
         self._fps = fps
         self._sw = pygame.display.Info().current_w
         self._sh = pygame.display.Info().current_h
-        self.delta = 1/fps
+        self.tickTime = 1 / fps
         self.x = 0
         self.y = 0
         self.xspeed = 0
@@ -27,15 +27,15 @@ class Jumper():
         pass
 
     def update(self):
-        self.yspeed += -9.8*self.delta
+        self.yspeed += -9.8*self.tickTime
         if not self.moved and self.xspeed:
             xspeedprev = self.xspeed
-            self.xspeed += math.copysign(6*self.delta, -1*self.xspeed)
+            self.xspeed += math.copysign(6 * self.tickTime, -1 * self.xspeed)
             if (xspeedprev > 0) ^ (self.xspeed > 0):
                 self.xspeed = 0
         # position movement
-        self.x += self.xspeed * self.delta
-        self.y += self.yspeed * self.delta
+        self.x += self.xspeed * self.tickTime
+        self.y += self.yspeed * self.tickTime
         # Temporary floor collision. In future, move floor collision into checkCollision()
         if self.y <= self.miny:
             self.y = self.miny
@@ -44,8 +44,8 @@ class Jumper():
 
     def move(self, ximpulse, yimpulse):
         self.moved = True
-        self.xspeed += ximpulse * self.delta
-        self.yspeed += yimpulse * self.delta
+        self.xspeed += ximpulse * self.tickTime
+        self.yspeed += yimpulse * self.tickTime
         if math.fabs(self.xspeed) > self.maxspeed:
             self.xspeed = math.copysign(self.maxspeed, self.xspeed)
         if self.yspeed > self.maxspeed:

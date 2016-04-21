@@ -16,6 +16,7 @@ sh = info.current_h
 screen = pygame.display.set_mode((sw,sh))
 fps = 30
 pixelFactor = 5
+tickTime = 1/fps #I dont mind if you rename this, but i dont find delta to be a clear name
 player = Jumper.Jumper(fps, pixelFactor, 2.5)
 lastprint = time.time()
 
@@ -49,7 +50,7 @@ while True:
     if time.time() > lastprint + 1:
         print(player.x, player.y, player.xspeed, player.yspeed)
         lastprint = time.time()
-    if timedelta < player.delta:
-        time.sleep(player.delta-timedelta)
+    if timedelta < tickTime:
+        time.sleep(player.tickTime - timedelta)
     else:
         print("Overloaded")
