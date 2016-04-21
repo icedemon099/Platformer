@@ -6,7 +6,7 @@ class Jumper():
     _fps = None
     _sw = None
     _sh = None
-    def __init__(self, fps, width, length):
+    def __init__(self, fps, width, pixelFactor):
         self._registry.append(self)
         self._fps = fps
         self._sw = pygame.display.Info().current_w
@@ -20,8 +20,7 @@ class Jumper():
         self.miny = 0
         self.moved = False
         self.width = width
-        self.length = length
-        self.pixelFactor = 5 #Pixels per in-game meter
+        self.pixelFactor = pixelFactor #Pixels per in-game meter. Feel free to adjust
 
     def collisionCheck(self):
         pass

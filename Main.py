@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((sw,sh))
 fps = 30
 pixelFactor = 5
 tickTime = 1/fps #I dont mind if you rename this, but i dont find delta to be a clear name
-player = Jumper.Jumper(fps, pixelFactor, 2.5)
+player = Jumper.Jumper(fps, pixelFactor, pixelFactor/2)
 lastprint = time.time()
 
 # Main loop
