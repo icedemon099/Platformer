@@ -1,6 +1,10 @@
 import pygame
+import time
+timercounter = 0
+timers = {}
+buttons = []
 class Button():
-    def __init__(self, coords, width, height, command, text, clicks, colours, relMiddle):
+    def __init__(self, coords, width = 10, height = 10, command = None, text = "", clicks = 1, offmain = (0, 0, 0), offedge = (255, 255, 255), onmain = (255, 255, 255), onedge = (0, 0, 0), xRelMiddle = 0.5, yRelMiddle = 0.5):
         #X and Y refer to where to draw the button
         #Command is the function invoked when the buttons is clicked
         #clicks is the number of times the buttton needs to be
@@ -11,25 +15,19 @@ class Button():
         #Since pygame always uses the coordinate given for the top corner
         
         self.x, self.y = coords
-        self.width = width
-        self.height = height
-        self.offmain, self.offedge, self.onmain, self.onedge = colours
-        self.width = width
-        self.height = height
+        self.x, self.y = round(self.x), round(self.y)
+        self.width = round(width)
+        self.height = round(height)
+        self.offmain, self.offedge, self.onmain, self.onedge = offmain, offedge, onmain, onedge
         self.command = command
         self.clicks = clicks
         self.timesclicked = 0
-        self.addTimer = None
-        
-        #immediately after the button is made this is changed
-        #to a link to a pygame_handler function of the same name
-        
         self.drawme = False
 
         #If false, not drawn and is unable to be clicked
         
         self.updateText(text)
-        self.changeAnchor(relMiddle)
+        self.changeAnchor((xRelMiddle, yRelMiddle))
     def checkPressed(self, x, y):
         #If clicked, will invoke its command if its been clicked enough times
         #recently, and returns True to let the caller know to
@@ -92,6 +90,16 @@ class Button():
         xRelMiddle, yRelMiddle = relMiddle
         self.x -= round(self.width*xRelMiddle)
         self.y -= round(self.height*yRelMiddle)
-def newButton(coords, width, height, command, text, clicks, colours, relCentre):
-    button = Button(coords, width, height, command, text, clicks, colours, relCentre)
-    return button
+    def addTimer(self, command, amount):
+        global timercounter
+        end = amount + time.time()
+        counter = timercounter
+        timercounter += 1
+        timers["after"+ str(counter)] = (end, command)
+        return "after" + str(counter)
+def manageTimers():
+    for timer in dict(timers):
+            endtime, command = timers[timer]
+            if time.time() > endtime:
+                command()
+                del(timers[timer])
