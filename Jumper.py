@@ -1,5 +1,6 @@
 import math
 import pygame
+# cough cough guys have u heard of a nice thing called pygame.sprite?
 
 class Jumper():
     _registry = []
