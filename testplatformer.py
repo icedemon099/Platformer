@@ -49,7 +49,7 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         self.speed_x += a_x
         self.speed_y += a_y
 
-    def move(self, walls):
+    def move(self, walls, enemies):
         # Move left/right
         self.rect.x += self.speed_x
 
@@ -74,22 +74,39 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
             else:
                 self.rect.top = block.rect.bottom
 
-class enemy():
-    def __init__(self, x, y, xfin, yfin):
+        if pygame.sprite.spritecollideany(self, enemies, False):
+            for n in range(30):
+                print("U dead gurl")
+            return True
+
+
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, xinit, yinit, xfin, yfin):
+        super().__init__()
+
         self.image = pygame.Surface([10, 10])
         self.image.fill(red)
 
         # sets it to the top left of the numbers
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.xdis = xdis
-        self.ydis = ydis
+        self.xinit = xinit
+        self.yinit = yinit
+        self.rect.x = xinit
+        self.rect.y = yinit
+        self.xfin = xfin
+        self.yfin = yfin
 
     def move(self):
-        if self.rect.x < self.xdis:
+        if self.rect.y <= self.yinit and self.rect.x < self.xfin:
             self.rect.x += 6
-        elif self.rect.y
+        elif self.rect.x >= self.xfin and self.rect.y < self.yfin:
+            self.rect.y += 6
+        elif self.rect.y >= self.yfin and self.rect.x > self.xinit:
+            self.rect.x -= 6
+        elif self.rect.x <= self.xinit and self.rect.y > self.yinit:
+            self.rect.y -= 6
 
 
 class Room(object):
@@ -105,6 +122,7 @@ class Room(object):
         self.enemies = pygame.sprite.Group()
         self.coins = pygame.sprite.Group()
 
+
 class Room1(Room):
     def __init__(self):
         super().__init__()
@@ -118,9 +136,13 @@ class Room1(Room):
                  [390, 50, 20, 500, blue]
                 ]
 
+        enemy = Enemy(30, 30, 370, 560)
+        self.enemies.add(enemy)
+
         for w in walls:
             wall = Wall(w[0], w[1], w[2], w[3], w[4])
             self.wall_list.add(wall)
+
 
 class Room2(Room):
     """This creates all the walls in room 2"""
@@ -227,35 +249,49 @@ def main():
                     jumper.accelerate(0, -speed)
 
         # room moving
-        jumper.move(current_room.wall_list)
+        done = jumper.move(current_room.wall_list, current_room.enemies)
 
         for enemy in current_room.enemies:
             enemy.move()
 
         if jumper.rect.x < -15:
             if current_room_no == 0:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 2
                 current_room = rooms[current_room_no]
+                for enemy in current_room.enemies:
+                    moving_sprites.add(enemy)
                 jumper.rect.x = 790
             elif current_room_no == 2:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 1
                 current_room = rooms[current_room_no]
                 jumper.rect.x = 790
             else:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 0
                 current_room = rooms[current_room_no]
                 jumper.rect.x = 790
 
         if jumper.rect.x > 801:
             if current_room_no == 0:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 1
                 current_room = rooms[current_room_no]
                 jumper.rect.x = 0
             elif current_room_no == 1:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 2
                 current_room = rooms[current_room_no]
                 jumper.rect.x = 0
             else:
+                for enemy in current_room.enemies:
+                    moving_sprites.remove(enemy)
                 current_room_no = 0
                 current_room = rooms[current_room_no]
                 jumper.rect.x = 0
