@@ -4,7 +4,7 @@ import pygame.locals
 import time
 from math import *
 from sys import exit
-#
+
 # Import code
 import Jumper
 
@@ -13,12 +13,16 @@ pygame.init()
 info = pygame.display.Info()
 sw = info.current_w
 sh = info.current_h
-screen = pygame.display.set_mode((sw,sh))
-fps = 30
-pixelFactor = 10
-tickTime = 1/fps #I dont mind if you rename this, but i dont find delta to be a clear name
+screen = pygame.display.set_mode((sw, sh))
+
+fps = 60
+pixelFactor = 5
+tickTime = 1/fps  # I dont mind if you rename this, but i dont find delta to be a clear name
 player = Jumper.Jumper(fps, pixelFactor, pixelFactor/2)
 lastprint = time.time()
+
+speed = 26
+jstrength = 20
 
 # Main loop
 while True:
@@ -27,14 +31,14 @@ while True:
     # Movement input
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT]:
-        player.move(-8, 0)
+        player.move(-speed, 0)
     if pressed[pygame.K_RIGHT]:
-        player.move(8, 0)
+        player.move(speed, 0)
     if pressed[pygame.K_UP]:
-        #Positive direction is UP. Do not change
-        player.move(0, 12)
+        # Positive direction is UP. Do not change
+        player.move(0, jstrength)
     if pressed[pygame.K_DOWN]:
-        player.move(0, -3)
+        player.move(0, -jstrength/4)
 
     for event in pygame.event.get():
         if event.type == pygame.locals.QUIT:
