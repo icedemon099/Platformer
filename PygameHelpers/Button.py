@@ -103,3 +103,8 @@ def manageTimers():
             if time.time() > endtime:
                 command()
                 del(timers[timer])
+#If for some reason, you need this
+def cancelTimer(self, ID):
+    if ID in self.timers:
+        del(self.timers[ID])
+
