@@ -76,13 +76,16 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
             # stop vertical movement
             self.speed_y = 0
 
-
     def calc_grav(self):
         # find effect of gravity
         if self.speed_y == 0:
             self.speed_y = 1  # cos if the block is moving, the player's gotta move with it too
         else:
             self.speed_y += .35
+
+        if self.rect.y >= screen_height - self.rect.height and self.speed_y >= 0:
+            self.speed_y = 0
+            self.rect.y = screen_height - self.rect.height
 
     def jump(self):
         # when jump button is hit
@@ -92,7 +95,7 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         self.rect.y -= 2
 
-        if len(platform_hit_list) > 0:
+        if len(platform_hit_list) > 0 or self.rect.bottom >= screen_height:
             self.speed_y = -10
 
     def checkdeath(self):
@@ -144,6 +147,8 @@ class Level(object):
         self.jumper = jumper
         self.coins = pygame.sprite.Group()
 
+        self.world_shift = 0
+
         self.background = None
 
     def update(self):
@@ -157,23 +162,33 @@ class Level(object):
         self.platform_list.draw(screen)
         self.enemies.draw(screen)
 
+    def shift_world(self, shift_x):
+        self.world_shift += shift_x
+
+        for platform in self.platform_list:
+            platform.rect.x += shift_x
+
+        for enemy in self.enemies:
+            enemy.rect.x += shift_x
+
 
 class Level_01(Level):
     def __init__(self, jumper):
         Level.__init__(self, jumper)
 
         # wall data
-        level = [[0, 0, 20, 250, white],
-                 [0, 350, 20, 250, white],
-                 [780, 0, 20, 250, white],
-                 [780, 350, 20, 250, white],
-                 [20, 0, 760, 20, white],
-                 [20, 580, 760, 20, white],
+        level = [[0, 0, 10, 250, white],
+                 [0, 350, 10, 250, white],
+                 [780, 0, 10, 250, white],
+                 [780, 350, 10, 250, white],
+                 [20, 0, 760, 10, white],
+                 [20, 580, 760, 10, white],
                  [500, 500, 210, 70, black],
                  [200, 400, 210, 70, black],
                  [600, 300, 210, 70, black]
                 ]
 
+        self.level_limit = -1000
         # makes enemy
         enemy = Enemy(30, 30, 370, 560)
         enemy.jumper = self.jumper
@@ -184,6 +199,30 @@ class Level_01(Level):
             platform = Platform(p[0], p[1], p[2], p[3], p[4])
             platform.jumper = self.jumper
             self.platform_list.add(platform)
+
+class Level_02(Level):
+    """ Definition for level 2. """
+
+    def __init__(self, player):
+        """ Create level 1. """
+
+        # Call the parent constructor
+        Level.__init__(self, player)
+
+        self.level_limit = -1000
+
+        # Array with type of platform, and x, y location of the platform.
+        level = [[450, 570, 210, 30, black],
+                 [850, 420, 210, 30, black],
+                 [1000, 520, 210, 30, black],
+                 [1120, 280, 210, 30, black],
+                 ]
+
+        # Go through the array above and add platforms
+        for platform in level:
+            block = Platform(platform[0], platform[1], platform[2], platform[3], platform[4])
+            block.jumper = self.jumper
+            self.platform_list.add(block)
 
 
 # Now that's all done, lets actually test this stuff.
@@ -248,11 +287,25 @@ def main():
         if jumper.checkdeath():
             done = True
 
-        # can't go beyond as of yet
-        if jumper.rect.right > screen_width:
-            jumper.rect.right = screen_width
-        if jumper.rect.left < 0:
-            jumper.rect.left = 0
+        # If the player gets near the right side, shift the world left (-x)
+        if jumper.rect.right >= 500:
+            diff = jumper.rect.right - 500
+            jumper.rect.right = 500
+            current_level.shift_world(-diff)
+
+        # If the player gets near the left side, shift the world right (+x)
+        if jumper.rect.left <= 120:
+            diff = 120 - jumper.rect.left
+            jumper.rect.left = 120
+            current_level.shift_world(diff)
+
+        current_pos = jumper.rect.x + current_level.world_shift
+        if current_pos < current_level.level_limit:
+            jumper.rect.x = 120
+            if current_level_no < len(levels) - 1:
+                current_level_no += 1
+                current_level = levels[current_level_no]
+                jumper.level = current_level
 
         # now draw! ^-^
         current_level.draw(screen)  # redraws walls
