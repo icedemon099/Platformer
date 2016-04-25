@@ -1,5 +1,5 @@
 # Ideas mostly taken from this bloke ==> Paul Vincent Craven
-# And I'm sorry I made this, this is moostly for me to understand how pygame works...
+# And I'm sorry I made this, this is mostly for me to understand how pygame works...
 import pygame
 
 black = (0, 0, 0)
@@ -11,7 +11,7 @@ screen_width = 800
 screen_height = 600
 
 
-class Wall(pygame.sprite.Sprite):
+class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, colour):
         # uses parent sprite module section - need to learn more bout this
         # walls can only be straight rectangles at this point in time, unfortunately.
@@ -33,7 +33,7 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         super().__init__()
 
         # creates a surface just like before and makes it white
-        self.image = pygame.Surface([15, 15])
+        self.image = pygame.Surface([20, 50])
         self.image.fill(white)
 
         # sets it to the top left of the numbers
@@ -45,37 +45,60 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         self.speed_x = 0
         self.speed_y = 0
 
-    def accelerate(self, a_x, a_y):
-        self.speed_x += a_x
-        self.speed_y += a_y
+        self.level = None
 
-    def move(self, walls, enemies):
+    def update(self):
+        self.calc_grav()
+
         # Move left/right
         self.rect.x += self.speed_x
 
         # check if it hit anything
         # takes the object itself, what it hits, and checks whether it should destroy it (False)
-        block_hit_list = pygame.sprite.spritecollide(self, walls, False)
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
             # move the sprite to a place that is totally fine to be at
             if self.speed_x > 0:  # ie going right
                 self.rect.right = block.rect.left
-            else:  # if the block is going left
+            elif self.speed_x < 0:  # if the block is going left
                 self.rect.left = block.rect.right
 
         # and now to move it up and down
         self.rect.y += self.speed_y
 
         # same as above, does them separately just in case moving it made it hit something else
-        block_hit_list = pygame.sprite.spritecollide(self, walls, False)
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
             if self.speed_y > 0:
                 self.rect.bottom = block.rect.top
-            else:
+            elif self.speed_y < 0:
                 self.rect.top = block.rect.bottom
+            # stop vertical movement
+            self.speed_y = 0
 
-        # if you hit an enemy you DIEEE
-        if pygame.sprite.spritecollideany(self, enemies, False):
+
+    def calc_grav(self):
+        # find effect of gravity
+        if self.speed_y == 0:
+            self.speed_y = 1  # cos if the block is moving, the player's gotta move with it too
+        else:
+            self.speed_y += .35
+
+    def jump(self):
+        # when jump button is hit
+
+        # move down a bit to check that there is a floor
+        self.rect.y += 2
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        self.rect.y -= 2
+
+        if len(platform_hit_list) > 0:
+            self.speed_y = -10
+
+    def checkdeath(self):
+        # hit = death
+
+        if pygame.sprite.spritecollideany(self, self.level.enemies, False):
             for n in range(30):
                 print("U dead gurl")
             return True
@@ -99,7 +122,7 @@ class Enemy(pygame.sprite.Sprite):
         self.xfin = xfin
         self.yfin = yfin
 
-    def move(self):
+    def update(self):
         # moves the enemy in a rectangle based on xinit, yinit, xfin, and yfin.
         if self.rect.y <= self.yinit and self.rect.x < self.xfin:
             self.rect.x += 6
@@ -111,98 +134,64 @@ class Enemy(pygame.sprite.Sprite):
             self.rect.y -= 6
 
 
-class Room(object):
+class Level(object):
     # base class for rooms
 
-    # rooms have list of stuff
-    wall_list = None
-    enemies = None
-    coins = None  # there ain't no coins as of yet, but we can do that
-
     # initialises stuff lists
-    def __init__(self):
-        self.wall_list = pygame.sprite.Group()
+    def __init__(self, jumper):
+        self.platform_list = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.jumper = jumper
         self.coins = pygame.sprite.Group()
 
+        self.background = None
 
-class Room1(Room):
-    def __init__(self):
-        super().__init__()
+    def update(self):
+        self.platform_list.update()
+        self.enemies.update()
+
+    def draw(self, screen):
+        # draws the stuff
+        screen.fill(blue)
+
+        self.platform_list.draw(screen)
+        self.enemies.draw(screen)
+
+
+class Level_01(Level):
+    def __init__(self, jumper):
+        Level.__init__(self, jumper)
 
         # wall data
-        walls = [[0, 0, 20, 250, white],
+        level = [[0, 0, 20, 250, white],
                  [0, 350, 20, 250, white],
                  [780, 0, 20, 250, white],
                  [780, 350, 20, 250, white],
                  [20, 0, 760, 20, white],
                  [20, 580, 760, 20, white],
-                 [390, 50, 20, 500, blue]
+                 [500, 500, 210, 70, black],
+                 [200, 400, 210, 70, black],
+                 [600, 300, 210, 70, black]
                 ]
 
         # makes enemy
         enemy = Enemy(30, 30, 370, 560)
+        enemy.jumper = self.jumper
         self.enemies.add(enemy)
 
         # makes walls
-        for w in walls:
-            wall = Wall(w[0], w[1], w[2], w[3], w[4])
-            self.wall_list.add(wall)
+        for p in level:
+            platform = Platform(p[0], p[1], p[2], p[3], p[4])
+            platform.jumper = self.jumper
+            self.platform_list.add(platform)
 
-
-class Room2(Room):
-    """This creates all the walls in room 2"""
-    def __init__(self):
-        super().__init__()
-
-        walls = [[0, 0, 20, 250, white],
-                 [0, 350, 20, 250, white],
-                 [780, 0, 20, 250, white],
-                 [780, 350, 20, 250, white],
-                 [20, 0, 760, 20, white],
-                 [20, 580, 760, 20, white],
-                 [190, 50, 20, 500, blue],
-                 [590, 50, 20, 500, blue]
-                ]
-
-        for item in walls:
-            wall = Wall(item[0], item[1], item[2], item[3], item[4])
-            self.wall_list.add(wall)
-
-
-class Room3(Room):
-    """This creates all the walls in room 3"""
-    def __init__(self):
-        super().__init__()
-
-        walls = [[0, 0, 20, 250, white],
-                 [0, 350, 20, 250, white],
-                 [780, 0, 20, 250, white],
-                 [780, 350, 20, 250, white],
-                 [20, 0, 760, 20, white],
-                 [20, 580, 760, 20,  white]
-                ]
-
-        for item in walls:
-            wall = Wall(item[0], item[1], item[2], item[3], item[4])
-            self.wall_list.add(wall)
-
-        # makes pretty pattern
-        for x in range(100, 800, 100):
-            for y in range(50, 451, 300):
-                wall = Wall(x, y, 20, 200, blue)
-                self.wall_list.add(wall)
-
-        for x in range(150, 700, 100):
-            wall = Wall(x, 200, 20, 200, blue)
-            self.wall_list.add(wall)
 
 # Now that's all done, lets actually test this stuff.
 def main():
     pygame.init()
 
     screen = pygame.display.set_mode([screen_width, screen_height])
-    pygame.display.set_caption("Let's seeeeeeeee......")
+    pygame.display.set_caption("Let's see......")
 
     # creates jumper
     moving_sprites = pygame.sprite.Group()
@@ -211,21 +200,17 @@ def main():
     moving_sprites.add(jumper)
 
     # adds rooms to list and initialises them
-    rooms = []
+    levels = []
 
-    room = Room1()
-    rooms.append(room)
+    level = Level_01(jumper)
+    levels.append(level)
 
-    room = Room2()
-    rooms.append(room)
+    current_level_no = 0
+    current_level = levels[current_level_no]
 
-    room = Room3()
-    rooms.append(room)
+    jumper.level = current_level
 
-    current_room_no = 0
-    current_room = rooms[current_room_no]
-
-    for enemy in current_room.enemies:
+    for enemy in current_level.enemies:
         moving_sprites.add(enemy)
 
     # sorry bout the clock, I'll add in some more info bout it later
@@ -233,7 +218,7 @@ def main():
 
     done = False
 
-    speed = 3
+    speed = 6
     # main loop for movement and checking user input
     while not done:
         # key checks
@@ -241,92 +226,37 @@ def main():
             if event.type == pygame.QUIT:
                 done = True
 
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    jumper.accelerate(-speed, 0)
+                    jumper.speed_x = -speed
                 elif event.key == pygame.K_RIGHT:
-                    jumper.accelerate(speed, 0)
+                    jumper.speed_x = speed
                 elif event.key == pygame.K_UP:
-                    jumper.accelerate(0, -speed)
-                elif event.key == pygame.K_DOWN:
-                    jumper.accelerate(0, speed)
+                    jumper.jump()
 
-            # we can mess with this with ice and other surfaces
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    jumper.accelerate(speed, 0)
-                elif event.key == pygame.K_RIGHT:
-                    jumper.accelerate(-speed, 0)
-                elif event.key == pygame.K_UP:
-                    jumper.accelerate(0, speed)
-                elif event.key == pygame.K_DOWN:
-                    jumper.accelerate(0, -speed)
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_LEFT and jumper.speed_x < 0:
+                    jumper.speed_x = 0
+                if event.key == pygame.K_RIGHT and jumper.speed_x > 0:
+                    jumper.speed_x = 0
 
         # moving the sprites
-        if jumper.move(current_room.wall_list, current_room.enemies):  # output about death
+        moving_sprites.update()
+        current_level.update()
+
+        # check death
+        if jumper.checkdeath():
             done = True
 
-        for enemy in current_room.enemies:
-            enemy.move()
-
-        # there's probably some way to shorten this
-        if jumper.rect.x < -15:  # if he's going left and out of picture
-            if current_room_no == 0:
-                for enemy in current_room.enemies:  # removes enemies from previous room
-                    moving_sprites.remove(enemy)
-                current_room_no = 2
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:  # adds enemies into new room
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 790
-            elif current_room_no == 2:
-                for enemy in current_room.enemies:
-                    moving_sprites.remove(enemy)
-                current_room_no = 1
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 790
-            else:
-                for enemy in current_room.enemies:
-                    moving_sprites.remove(enemy)
-                current_room_no = 0
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 790
-
-        if jumper.rect.x > 801:  # going right
-            if current_room_no == 0:
-                for enemy in current_room.enemies:
-                    moving_sprites.remove(enemy)
-                current_room_no = 1
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 0
-            elif current_room_no == 1:
-                for enemy in current_room.enemies:
-                    moving_sprites.remove(enemy)
-                current_room_no = 2
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 0
-            else:
-                for enemy in current_room.enemies:
-                    moving_sprites.remove(enemy)
-                current_room_no = 0
-                current_room = rooms[current_room_no]
-                for enemy in current_room.enemies:
-                    moving_sprites.add(enemy)
-                jumper.rect.x = 0
+        # can't go beyond as of yet
+        if jumper.rect.right > screen_width:
+            jumper.rect.right = screen_width
+        if jumper.rect.left < 0:
+            jumper.rect.left = 0
 
         # now draw! ^-^
-        screen.fill(black)
-
+        current_level.draw(screen)  # redraws walls
         moving_sprites.draw(screen)  # redraws moving sprites
-        current_room.wall_list.draw(screen)  # redraws walls
 
         pygame.display.flip()
         clock.tick(60)
