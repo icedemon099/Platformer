@@ -122,11 +122,6 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         # takes the object itself, what it hits, and checks whether it should destroy it (False)
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
-            if isinstance(block, MovingPlatform):
-                self.rect.x += block.speed_x
-                print("iM ON MBLOCK")
-                print(block.speed_x)
-                print(self.rect.x)
             # move the sprite to a place that is totally fine to be at
             if self.speed_x > 0:  # ie going right
                 self.rect.right = block.rect.left
@@ -139,6 +134,11 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         # same as above, does them separately just in case moving it made it hit something else
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
+            if isinstance(block, MovingPlatform):
+                self.rect.x += block.speed_x
+                print("iM ON MBLOCK")
+                print(block.speed_x)
+                print(self.rect.x)
             if self.speed_y > 0:
                 self.rect.bottom = block.rect.top
             elif self.speed_y < 0:
@@ -272,7 +272,7 @@ class Level_01(Level):
         mp.speed_x = 3
         mp.player = self.jumper
         mp.level = self
-        mp.make(300, 250)
+        mp.make(300, 350)
 
 
         # makes walls
