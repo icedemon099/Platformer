@@ -6,25 +6,90 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 blue = (50, 50, 255)
 red = (255, 0, 0)
+green = (50, 255, 50)
 
 screen_width = 800
 screen_height = 600
 
 
 class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, colour):
+    colour = black
+    width = 10
+    height = 10
+
+    def __init__(self):
         # uses parent sprite module section - need to learn more bout this
         # walls can only be straight rectangles at this point in time, unfortunately.
         super().__init__()
 
+    def make(self, x, y):
         # makes the wall blue and sets the size
-        self.image = pygame.Surface([width, height])
-        self.image.fill(colour)
+        self.image = pygame.Surface([self.width, self.height])
+        self.image.fill(self.colour)
 
         #  make top left corner the location
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
+
+
+
+class MovingPlatform(Platform):
+    speed_x = 0
+    speed_y = 0
+
+    boundary_top = 0
+    boundary_bottom = 0
+    boundary_left = 0
+    boundary_right = 0
+    cur_pos = 0
+    player = None
+
+    level = None
+    colour = green
+
+    def __init__(self):
+        super().__init__()
+
+    def update(self):
+        # mooooove da jumper - same method as jumper
+
+        # Move left/right
+        self.rect.x += self.speed_x
+
+        # Did we hit a jumper?
+        hit = pygame.sprite.collide_rect(self, self.player)
+        if hit:
+            # Shove the jumper away - the platform's more important.
+
+            # If we are moving right, set our right side
+            # to the left side of the item we hit
+            if self.speed_x < 0:
+                self.player.rect.right = self.rect.left
+            else:
+                # Otherwise if we are moving left, do the opposite.
+                self.player.rect.left = self.rect.right
+
+        # Move up/down
+        self.rect.y += self.speed_y
+
+        # same for up and down
+        hit = pygame.sprite.collide_rect(self, self.player)
+        if hit:
+            # Push the jumper
+            if self.speed_y < 0:
+                self.player.rect.bottom = self.rect.top
+            else:
+                self.player.rect.top = self.rect.bottom
+
+        # Do we need to change direction after hitting boundary limit?
+        if self.rect.bottom > self.boundary_bottom or self.rect.top < self.boundary_top:
+            self.speed_y *= -1
+
+        # need to consider world shift
+        self.cur_pos += self.speed_x
+        if self.cur_pos < self.boundary_left or self.cur_pos > self.boundary_right:
+            self.speed_x *= -1
 
 
 class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
@@ -57,6 +122,11 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
         # takes the object itself, what it hits, and checks whether it should destroy it (False)
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
+            if isinstance(block, MovingPlatform):
+                self.rect.x += block.speed_x
+                print("iM ON MBLOCK")
+                print(block.speed_x)
+                print(self.rect.x)
             # move the sprite to a place that is totally fine to be at
             if self.speed_x > 0:  # ie going right
                 self.rect.right = block.rect.left
@@ -109,7 +179,7 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
 
 # class for enemy, you can make as many classes for this stuff, its fun!
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, xinit, yinit, xfin, yfin):
+    def __init__(self, xinit, yinit, xdis, ydis):
         super().__init__()
 
         # same stuff as jumper
@@ -122,19 +192,24 @@ class Enemy(pygame.sprite.Sprite):
         self.yinit = yinit
         self.rect.x = xinit
         self.rect.y = yinit
-        self.xfin = xfin
-        self.yfin = yfin
+        self.dis = (xdis, ydis)
+        self.currentdis = [0, 0]
 
     def update(self):
-        # moves the enemy in a rectangle based on xinit, yinit, xfin, and yfin.
-        if self.rect.y <= self.yinit and self.rect.x < self.xfin:
+
+        # moves the bloke in a rectangle
+        if self.currentdis[0] <= self.dis[0] and self.currentdis[1] <= 0:
             self.rect.x += 6
-        elif self.rect.x >= self.xfin and self.rect.y < self.yfin:
+            self.currentdis[0] += 6
+        elif self.currentdis[0] >= self.dis[0] and self.currentdis[1] <= self.dis[1]:
             self.rect.y += 6
-        elif self.rect.y >= self.yfin and self.rect.x > self.xinit:
+            self.currentdis[1] += 6
+        elif self.currentdis[0] >= 0 and self.currentdis[1] >= self.dis[1]:
             self.rect.x -= 6
-        elif self.rect.x <= self.xinit and self.rect.y > self.yinit:
+            self.currentdis[0] -= 6
+        elif self.currentdis[0] <= 0 and self.currentdis[1] >= 0:
             self.rect.y -= 6
+            self.currentdis[1] -= 6
 
 
 class Level(object):
@@ -177,15 +252,9 @@ class Level_01(Level):
         Level.__init__(self, jumper)
 
         # wall data
-        level = [[0, 0, 10, 250, white],
-                 [0, 350, 10, 250, white],
-                 [780, 0, 10, 250, white],
-                 [780, 350, 10, 250, white],
-                 [20, 0, 760, 10, white],
-                 [20, 580, 760, 10, white],
-                 [500, 500, 210, 70, black],
+        level = [[500, 520, 210, 70, black],
                  [200, 400, 210, 70, black],
-                 [600, 300, 210, 70, black]
+                 [580, 350, 210, 70, black]
                 ]
 
         self.level_limit = -1000
@@ -194,11 +263,28 @@ class Level_01(Level):
         enemy.jumper = self.jumper
         self.enemies.add(enemy)
 
+        mp = MovingPlatform()
+        self.platform_list.add(mp)
+        mp.width = 120
+        mp.height = 20
+        mp.boundary_left = 0
+        mp.boundary_right = 200
+        mp.speed_x = 3
+        mp.player = self.jumper
+        mp.level = self
+        mp.make(300, 250)
+
+
         # makes walls
         for p in level:
-            platform = Platform(p[0], p[1], p[2], p[3], p[4])
+            platform = Platform()
+            platform.width = p[2]
+            platform.height = p[3]
+            platform.colour = p[4]
+            platform.make(p[0], p[1])
             platform.jumper = self.jumper
             self.platform_list.add(platform)
+
 
 class Level_02(Level):
     """ Definition for level 2. """
@@ -219,10 +305,14 @@ class Level_02(Level):
                  ]
 
         # Go through the array above and add platforms
-        for platform in level:
-            block = Platform(platform[0], platform[1], platform[2], platform[3], platform[4])
-            block.jumper = self.jumper
-            self.platform_list.add(block)
+        for p in level:
+            platform = Platform()
+            platform.width = p[2]
+            platform.height = p[3]
+            platform.colour = p[4]
+            platform.make(p[0], p[1])
+            platform.jumper = self.jumper
+            self.platform_list.add(platform)
 
 
 # Now that's all done, lets actually test this stuff.
@@ -242,6 +332,9 @@ def main():
     levels = []
 
     level = Level_01(jumper)
+    levels.append(level)
+
+    level = Level_02(jumper)
     levels.append(level)
 
     current_level_no = 0
@@ -309,7 +402,7 @@ def main():
 
         # now draw! ^-^
         current_level.draw(screen)  # redraws walls
-        moving_sprites.draw(screen)  # redraws moving sprites
+        moving_sprites.draw(screen) # redraws moving sprites
 
         pygame.display.flip()
         clock.tick(60)
