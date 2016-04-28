@@ -41,8 +41,8 @@ class Jumper(pygame.sprite.Sprite):
         self.x += self.xspeed * self.tickTime
         self.y += self.yspeed * self.tickTime
         # Temporary floor collision. In future, move floor collision into checkCollision()
-        if self.y-self.width <= self.miny:
-            self.y = self.miny
+        if self.y-self.width < self.miny:
+            self.y = self.miny + self.width
             self.yspeed = 0
         self.moved = False
         self.rect.x = self.x
@@ -50,11 +50,12 @@ class Jumper(pygame.sprite.Sprite):
     def move(self, ximpulse, yimpulse):
         self.moved = True
         self.xspeed += ximpulse * self.tickTime
-        self.yspeed += yimpulse * self.tickTime
+        if self.y-self.width == 0:
+            self.yspeed += yimpulse * self.tickTime
         if math.fabs(self.xspeed) > self.maxspeed:
             self.xspeed = math.copysign(self.maxspeed, self.xspeed)
         if self.yspeed > self.maxspeed:
             self.yspeed = self.maxspeed
 
     def render(self, screen): #Call this in the Main update loop. It should draw the object to the screen
-        pygame.draw.circle(screen, (0, 0, 0), (round((self.x-(self.width/2))*self.pixelFactor), self._sh-round((self.y-(self.width/2))*self.pixelFactor)), self.width)
+        screen.blit(self.image, (self.x*self.pixelFactor,self._sh-(self.y*self.pixelFactor)))

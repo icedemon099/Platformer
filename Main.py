@@ -16,14 +16,13 @@ sh = info.current_h
 screen = pygame.display.set_mode((sw, sh))
 
 fps = 60
-pixelFactor = 5
+pixelFactor = 20
 tickTime = 1/fps  # I dont mind if you rename this, but i dont find delta to be a clear name
 sprites = pygame.sprite.Group()
-player = Jumper.Jumper(fps, pixelFactor, pixelFactor/2)
+player = Jumper.Jumper(fps, pixelFactor/2, pixelFactor)
 lastprint = time.time()
 
-speed = 26
-jstrength = 20
+xAccelaration = 12
 # Main loop
 while True:
     timeprev = time.time()
@@ -31,14 +30,14 @@ while True:
     # Movement input
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT]:
-        player.move(-speed, 0)
+        player.move(-xAccelaration, 0)
     if pressed[pygame.K_RIGHT]:
-        player.move(speed, 0)
+        player.move(xAccelaration, 0)
     if pressed[pygame.K_UP]:
         # Positive direction is UP. Do not change
-        player.move(0, jstrength)
+        player.move(0, fps*12)
     if pressed[pygame.K_DOWN]:
-        player.move(0, -jstrength/4)
+        player.move(0, 5)
 
     for event in pygame.event.get():
         if event.type == pygame.locals.QUIT:
