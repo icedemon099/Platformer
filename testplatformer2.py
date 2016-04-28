@@ -173,7 +173,7 @@ class Jumper(pygame.sprite.Sprite):  # (which doesn't jump yet) >v<
 
         if pygame.sprite.spritecollideany(self, self.level.enemies, False):
             for n in range(30):
-                print("U dead gurl")
+                print("Death")
             return True
 
 

@@ -18,12 +18,12 @@ screen = pygame.display.set_mode((sw, sh))
 fps = 60
 pixelFactor = 5
 tickTime = 1/fps  # I dont mind if you rename this, but i dont find delta to be a clear name
+sprites = pygame.sprite.Group()
 player = Jumper.Jumper(fps, pixelFactor, pixelFactor/2)
 lastprint = time.time()
 
 speed = 26
 jstrength = 20
-
 # Main loop
 while True:
     timeprev = time.time()
