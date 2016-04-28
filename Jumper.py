@@ -27,7 +27,6 @@ class Jumper(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(pygame.image.load("dog.gif").convert_alpha(), (round(width*pixelFactor),round(width*pixelFactor)))
         self.mask = pygame.mask.from_surface(self.image, 127)#Needs an alpha off greater than 127 to count. Placeholder
         self.rect = self.image.get_rect()
-
     def collisionCheck(self):
         pass
 
@@ -48,7 +47,6 @@ class Jumper(pygame.sprite.Sprite):
         self.moved = False
         self.rect.x = self.x
         self.rect.y = self.y
-        self.mask.set_at((self.rect.x, self.rect.y))
     def move(self, ximpulse, yimpulse):
         self.moved = True
         self.xspeed += ximpulse * self.tickTime
